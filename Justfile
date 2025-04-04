@@ -41,6 +41,23 @@ _parse_targets $expr:
     echo "$(yq -r "$filter" build.yaml | grep -v "^," | grep -i "${expr/#all/.*}")"
 
 # build firmware for single board & shield combination
+# _build_single $board $shield $snippet *west_args:
+#     #!/usr/bin/env bash
+#     set -euo pipefail
+#     artifact="${shield:+${shield// /+}-}${board}"
+#     build_dir="{{ build / '$artifact' }}"
+
+#     echo "Building firmware for $artifact..."
+#     west build -s zmk/app -d "$build_dir" -b $board {{ west_args }} ${snippet:+-S "$snippet"} -- \
+#         -DZMK_CONFIG="{{ config }}" ${shield:+-DSHIELD="$shield"}
+
+#     if [[ -f "$build_dir/zephyr/zmk.uf2" ]]; then
+#         mkdir -p "{{ out }}" && cp "$build_dir/zephyr/zmk.uf2" "{{ out }}/$artifact.uf2"
+#     else
+#         mkdir -p "{{ out }}" && cp "$build_dir/zephyr/zmk.bin" "{{ out }}/$artifact.bin"
+#     fi
+
+# build firmware for single board & shield combination
 _build_single $board $shield $snippet *west_args:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -49,7 +66,7 @@ _build_single $board $shield $snippet *west_args:
 
     echo "Building firmware for $artifact..."
     west build -s zmk/app -d "$build_dir" -b $board {{ west_args }} ${snippet:+-S "$snippet"} -- \
-        -DZMK_CONFIG="{{ config }}" ${shield:+-DSHIELD="$shield"}
+        -DZMK_CONFIG="{{ config }}" -DSHIELD=settings_reset
 
     if [[ -f "$build_dir/zephyr/zmk.uf2" ]]; then
         mkdir -p "{{ out }}" && cp "$build_dir/zephyr/zmk.uf2" "{{ out }}/$artifact.uf2"
